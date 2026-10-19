@@ -55,10 +55,16 @@ footer a{color:var(--main-d)}
 
   <form id="bookingForm" novalidate>
   <section class="card">
-    <h2>1. 台数とオプションを選ぶ</h2>
+    <h2>1. エアコンクリーニング</h2>
     <div id="menu"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. エアコン以外のお掃除<span class="opt">任意</span></h2>
+    <div id="menu2"></div>
+    <p class="note">※上記以外のお掃除は「ご要望・備考」欄にご記入ください。料金は担当者からご案内します。</p>
     <div class="total">
-      💰 概算金額
+      💰 概算金額（1＋2の合計）
       <div class="amount" id="total">¥0</div>
       <small>（税込・駐車場代別）</small>
     </div>
@@ -66,7 +72,7 @@ footer a{color:var(--main-d)}
   </section>
 
   <section class="card">
-    <h2>2. ご予約情報を入力する</h2>
+    <h2>3. ご予約情報を入力する</h2>
 
     <label class="f" for="name">お名前<span class="req">必須</span></label>
     <input type="text" id="name" name="name" required autocomplete="name">
@@ -114,17 +120,6 @@ footer a{color:var(--main-d)}
       <label><input type="radio" name="parking" value="相談したい">相談したい</label>
     </div>
 
-    <label class="f">エアコン以外のお掃除もご相談いただけます<span class="opt">任意・料金は担当者からご案内します</span></label>
-    <div class="choices">
-      <label><input type="checkbox" name="other" value="お風呂・浴室">お風呂・浴室</label>
-      <label><input type="checkbox" name="other" value="キッチン・水回り">キッチン・水回り</label>
-      <label><input type="checkbox" name="other" value="トイレ">トイレ</label>
-      <label><input type="checkbox" name="other" value="洗面台">洗面台</label>
-      <label><input type="checkbox" name="other" value="ガラスクリーニング">ガラスクリーニング</label>
-      <label><input type="checkbox" name="other" value="クロスメイク（壁紙染色）">クロスメイク（壁紙染色）</label>
-      <label><input type="checkbox" name="other" value="その他">その他（備考にご記入ください）</label>
-    </div>
-
     <label class="f" for="memo">ご要望・備考</label>
     <textarea id="memo" name="memo"></textarea>
 
@@ -147,7 +142,7 @@ footer a{color:var(--main-d)}
 const GAS_URL = "https://script.google.com/macros/s/AKfycbz6rTy5V0TIM6iFYtGenfYy9XywOP70phutMqMK6QZ-CiYGGWHwSGEo_6taiP5jAm8y1A/exec"; // 例: "https://script.google.com/macros/s/xxxxxxxx/exec"
 
 const MENU = [
-  { id:"units",   name:"エアコン台数（壁掛け）", desc:"9,900円/台",  price:9900, init:1, min:1 },
+  { id:"units",   name:"エアコン台数（壁掛け）", desc:"9,900円/台",  price:9900, init:1 },
   { id:"auto",    name:"うち、お掃除機能付き",   desc:"＋6,600円/台", price:6600, capUnits:true },
   { heading:"オプション（台数分お選びください）" },
   { id:"set3",    name:"3点セット", desc:"防カビ抗菌コート＋室外機＋ドレンホース｜7,000円/台（別々なら9,500円）", price:7000, capUnits:true },
@@ -155,37 +150,52 @@ const MENU = [
   { id:"outdoor", name:"室外機クリーニング", desc:"4,000円/台", price:4000, capUnits:true },
   { id:"drain",   name:"ドレンホース洗浄",   desc:"2,500円/台", price:2500, capUnits:true },
 ];
+// エアコン以外のお掃除（金額は仮。price:0 は「要見積もり」として概算に含めない）
+const MENU2 = [
+  { heading:"水回り" },
+  { id:"bath",     name:"お風呂・浴室",       desc:"15,000円/箇所", price:15000, unit:"箇所" },
+  { id:"kitchen",  name:"キッチン",           desc:"15,000円/箇所", price:15000, unit:"箇所" },
+  { id:"toilet",   name:"トイレ",             desc:"8,000円/箇所",  price:8000,  unit:"箇所" },
+  { id:"washbasin",name:"洗面台",             desc:"6,000円/箇所",  price:6000,  unit:"箇所" },
+  { heading:"その他" },
+  { id:"glass",    name:"ガラスクリーニング", desc:"2,000円/枚",    price:2000,  unit:"枚" },
+  { id:"cross",    name:"クロスメイク（壁紙染色）", desc:"要見積もり（お部屋数をお選びください）", price:0, unit:"部屋" },
+];
 const TIMES = ["9時〜12時","12時〜15時","15時〜18時","上記以外で相談したい"];
 // ==========================================
 
 const qty = {};
-const menuEl = document.getElementById("menu");
-MENU.forEach(m => {
-  if (m.heading) { menuEl.insertAdjacentHTML("beforeend", `<p class="subhead">${m.heading}</p>`); return; }
-  qty[m.id] = m.init || 0;
-  menuEl.insertAdjacentHTML("beforeend", `
-    <div class="row">
-      <div><div class="name">${m.name}</div><div class="price">${m.desc}</div></div>
-      <div class="stepper">
-        <button type="button" aria-label="${m.name}を減らす" data-id="${m.id}" data-d="-1">−</button>
-        <output id="q_${m.id}">${qty[m.id]}</output>
-        <button type="button" aria-label="${m.name}を増やす" data-id="${m.id}" data-d="1">＋</button>
-      </div>
-    </div>`);
-});
-menuEl.addEventListener("click", e => {
-  const b = e.target.closest("button[data-id]"); if (!b) return;
-  const m = MENU.find(x => x.id === b.dataset.id);
-  let v = qty[m.id] + Number(b.dataset.d);
-  v = Math.max(m.min || 0, Math.min(v, m.capUnits ? qty.units : 20));
-  qty[m.id] = v;
-  // 台数を減らしたら上限を超えた項目を調整
-  MENU.forEach(x => { if (x.capUnits && qty[x.id] > qty.units) qty[x.id] = qty.units; });
-  render();
-});
-function calcTotal(){ return MENU.reduce((s,m)=> m.id ? s + m.price*qty[m.id] : s, 0); }
+function buildMenu(list, el){
+  list.forEach(m => {
+    if (m.heading) { el.insertAdjacentHTML("beforeend", `<p class="subhead">${m.heading}</p>`); return; }
+    qty[m.id] = m.init || 0;
+    el.insertAdjacentHTML("beforeend", `
+      <div class="row">
+        <div><div class="name">${m.name}</div><div class="price">${m.desc}</div></div>
+        <div class="stepper">
+          <button type="button" aria-label="${m.name}を減らす" data-id="${m.id}" data-d="-1">−</button>
+          <output id="q_${m.id}">${qty[m.id]}</output>
+          <button type="button" aria-label="${m.name}を増やす" data-id="${m.id}" data-d="1">＋</button>
+        </div>
+      </div>`);
+  });
+  el.addEventListener("click", e => {
+    const b = e.target.closest("button[data-id]"); if (!b) return;
+    const m = ALL.find(x => x.id === b.dataset.id);
+    let v = qty[m.id] + Number(b.dataset.d);
+    v = Math.max(m.min || 0, Math.min(v, m.capUnits ? qty.units : 20));
+    qty[m.id] = v;
+    // 台数を減らしたら上限を超えた項目を調整
+    MENU.forEach(x => { if (x.capUnits && qty[x.id] > qty.units) qty[x.id] = qty.units; });
+    render();
+  });
+}
+const ALL = [...MENU, ...MENU2].filter(m => m.id);
+buildMenu(MENU, document.getElementById("menu"));
+buildMenu(MENU2, document.getElementById("menu2"));
+function calcTotal(){ return ALL.reduce((s,m)=> s + m.price*qty[m.id], 0); }
 function render(){
-  MENU.forEach(m => { if (m.id) document.getElementById("q_"+m.id).textContent = qty[m.id]; });
+  ALL.forEach(m => { document.getElementById("q_"+m.id).textContent = qty[m.id]; });
   document.getElementById("total").textContent = "¥" + calcTotal().toLocaleString();
 }
 render();
@@ -209,6 +219,11 @@ const msg = document.getElementById("msg");
 form.addEventListener("submit", async e => {
   e.preventDefault();
   msg.className = "msg";
+  if (!ALL.some(m => qty[m.id] > 0)) {
+    msg.textContent = "ご依頼のメニューを1つ以上お選びください。"; msg.className = "msg ng";
+    window.scrollTo({top:0, behavior:"smooth"});
+    return;
+  }
   if (!form.checkValidity()) {
     const bad = form.querySelector(":invalid");
     msg.textContent = "未入力の必須項目があります。"; msg.className = "msg ng";
@@ -217,8 +232,8 @@ form.addEventListener("submit", async e => {
   }
   const fd = new FormData(form);
   const data = Object.fromEntries(fd.entries());
-  data.other = fd.getAll("other").join("、");
-  MENU.forEach(m => { if (m.id) data[m.id] = qty[m.id]; });
+  data.other = MENU2.filter(m => m.id && qty[m.id] > 0).map(m => `${m.name}×${qty[m.id]}${m.unit}${m.price ? "" : "（要見積もり）"}`).join("、");
+  ALL.forEach(m => { data[m.id] = qty[m.id]; });
   data.total = calcTotal();
   data.submittedAt = new Date().toISOString();
 
