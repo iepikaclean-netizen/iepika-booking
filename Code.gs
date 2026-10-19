@@ -5,8 +5,7 @@
  *    実行ユーザー: 自分 / アクセス: 全員 でデプロイ
  * 3. 表示されたURLを index.html の GAS_URL に貼り付け
  */
-const SHOP_NAME = 'いえピカ（仮）';
-const SHOP_TEL  = '000-0000-0000';
+const SHOP_NAME = '家ピカエアコンクリーニング専門店';
 const NOTIFY_TO = Session.getEffectiveUser().getEmail(); // 店舗側の通知先
 
 const COLUMNS = [
@@ -30,7 +29,7 @@ function doPost(e) {
     MailApp.sendEmail({
       to: d.email,
       subject: `【${SHOP_NAME}】ご予約を受け付けました`,
-      body: `${d.name} 様\n\nこの度はご予約ありがとうございます。\n以下の内容で受け付けました。作業日は担当者よりご連絡のうえ確定いたします。\n\n${summary}\n\n${SHOP_NAME}\nTEL ${SHOP_TEL}`,
+      body: `${d.name} 様\n\nこの度はご予約ありがとうございます。\n以下の内容で受け付けました。作業日は担当者よりご連絡のうえ確定いたします。\n\n${summary}\n\n${SHOP_NAME}`,
       name: SHOP_NAME,
     });
   }

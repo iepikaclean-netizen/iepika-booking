@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>エアコンクリーニング ご予約フォーム｜いえピカ（仮）</title>
+<title>エアコンクリーニング ご予約フォーム｜家ピカエアコンクリーニング専門店</title>
 <style>
 :root{--main:#f08a24;--main-d:#d9700c;--bg:#fff7ef;--card:#fff;--text:#2b2b2b;--sub:#777;--line:#f1e2d2;--err:#d93025}
 *{box-sizing:border-box}
@@ -135,8 +135,7 @@ footer a{color:var(--main-d)}
   </form>
 
   <footer>
-    いえピカ（仮） ☎ <a href="tel:000-0000-0000">000-0000-0000</a><br>
-    © いえピカ（仮）
+    © 家ピカエアコンクリーニング専門店
   </footer>
 </div>
 
@@ -231,10 +230,10 @@ form.addEventListener("submit", async e => {
     await fetch(GAS_URL, { method:"POST", mode:"no-cors", body: new URLSearchParams(data) });
     form.innerHTML = `<section class="card"><h2>ご予約ありがとうございます</h2>
       <p>ご入力のメールアドレスに確認メールをお送りしました。作業日は担当者よりご連絡のうえ確定いたします。</p>
-      <p class="note">メールが届かない場合は迷惑メールフォルダをご確認いただくか、お電話でお問い合わせください。</p></section>`;
+      <p class="note">メールが届かない場合は迷惑メールフォルダをご確認ください。</p></section>`;
     window.scrollTo({top:0, behavior:"smooth"});
   } catch (err) {
-    msg.textContent = "送信に失敗しました。時間をおいて再度お試しいただくか、お電話でご連絡ください。"; msg.className = "msg ng";
+    msg.textContent = "送信に失敗しました。時間をおいて再度お試しください。"; msg.className = "msg ng";
     btn.disabled = false; btn.textContent = "この内容で予約する";
   }
 });
