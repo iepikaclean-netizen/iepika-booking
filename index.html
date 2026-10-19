@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>エアコンクリーニング ご予約フォーム｜家ピカエアコンクリーニング専門店</title>
 <style>
-:root{--main:#f08a24;--main-d:#d9700c;--bg:#fff7ef;--card:#fff;--text:#2b2b2b;--sub:#777;--line:#f1e2d2;--err:#d93025}
+:root{--main:#f08a24;--main-d:#d9700c;--bg:#e6f2fc;--card:#fff;--text:#2b2b2b;--sub:#777;--line:#f1e2d2;--err:#d93025}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.6}
 .wrap{max-width:640px;margin:0 auto;padding:24px 16px 48px}
@@ -118,7 +118,10 @@ footer a{color:var(--main-d)}
     <div class="choices">
       <label><input type="checkbox" name="other" value="お風呂・浴室">お風呂・浴室</label>
       <label><input type="checkbox" name="other" value="キッチン・水回り">キッチン・水回り</label>
-      <label><input type="checkbox" name="other" value="洗濯機">洗濯機</label>
+      <label><input type="checkbox" name="other" value="トイレ">トイレ</label>
+      <label><input type="checkbox" name="other" value="洗面台">洗面台</label>
+      <label><input type="checkbox" name="other" value="ガラスクリーニング">ガラスクリーニング</label>
+      <label><input type="checkbox" name="other" value="クロスメイク（壁紙染色）">クロスメイク（壁紙染色）</label>
       <label><input type="checkbox" name="other" value="その他">その他（備考にご記入ください）</label>
     </div>
 
@@ -144,8 +147,8 @@ footer a{color:var(--main-d)}
 const GAS_URL = "https://script.google.com/macros/s/AKfycbz6rTy5V0TIM6iFYtGenfYy9XywOP70phutMqMK6QZ-CiYGGWHwSGEo_6taiP5jAm8y1A/exec"; // 例: "https://script.google.com/macros/s/xxxxxxxx/exec"
 
 const MENU = [
-  { id:"units",   name:"エアコン台数（壁掛け）", desc:"8,900円/台",  price:8900, init:1, min:1 },
-  { id:"auto",    name:"うち、お掃除機能付き",   desc:"＋6,000円/台", price:6000, capUnits:true },
+  { id:"units",   name:"エアコン台数（壁掛け）", desc:"9,900円/台",  price:9900, init:1, min:1 },
+  { id:"auto",    name:"うち、お掃除機能付き",   desc:"＋6,600円/台", price:6600, capUnits:true },
   { heading:"オプション（台数分お選びください）" },
   { id:"set3",    name:"3点セット", desc:"防カビ抗菌コート＋室外機＋ドレンホース｜7,000円/台（別々なら9,500円）", price:7000, capUnits:true },
   { id:"coat",    name:"防カビ・抗菌コート", desc:"3,000円/台", price:3000, capUnits:true },
