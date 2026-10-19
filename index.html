@@ -25,6 +25,11 @@ h1{font-size:24px;margin:12px 0 8px}
 .subhead{font-weight:700;margin:18px 0 4px}
 .total{background:linear-gradient(135deg,#fff1e2,#ffe3c7);border-radius:12px;padding:16px;margin-top:16px;text-align:center}
 .total .amount{font-size:30px;font-weight:800;color:var(--main-d)}
+.total .amount{font-variant-numeric:tabular-nums;display:inline-block}
+.total.up .amount{animation:pulseUp .6s ease}
+.total.down .amount{animation:pulseDown .6s ease}
+@keyframes pulseUp{30%{transform:scale(1.08);color:#e8590c}100%{transform:none}}
+@keyframes pulseDown{30%{transform:scale(.94);color:#1971c2}100%{transform:none}}
 .total small{display:block;color:var(--sub);font-size:12px}
 .note{font-size:13px;color:var(--sub);margin-top:12px}
 label.f{display:block;font-weight:700;margin:16px 0 6px;font-size:14px}
@@ -253,13 +258,37 @@ document.querySelectorAll(".next").forEach(b => b.onclick = () => {
   showPanel(Number(b.dataset.go));
   document.querySelector(".cats").scrollIntoView({behavior:"smooth", block:"start"});
 });
+// 概算金額をカウントアップ／ダウン表示
+let shownTotal = null, totalAnim = 0;
+function animateTotal(target){
+  const el = document.getElementById("total");
+  const box = el.closest(".total");
+  if (shownTotal === null || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    shownTotal = target; el.textContent = "¥" + target.toLocaleString(); return;
+  }
+  if (target === shownTotal) return;
+  cancelAnimationFrame(totalAnim);
+  const from = shownTotal, diff = target - from, start = performance.now();
+  const dur = Math.min(900, 350 + Math.abs(diff) / 100); // 差が大きいほど少し長く
+  box.classList.remove("up", "down"); void box.offsetWidth;
+  box.classList.add(diff > 0 ? "up" : "down");
+  const step = now => {
+    const t = Math.min(1, (now - start) / dur);
+    const eased = 1 - Math.pow(1 - t, 3);
+    shownTotal = Math.round(from + diff * eased);
+    el.textContent = "¥" + shownTotal.toLocaleString();
+    if (t < 1) totalAnim = requestAnimationFrame(step);
+    else shownTotal = target;
+  };
+  totalAnim = requestAnimationFrame(step);
+}
 function render(){
   const n = list => list.filter(m => m.id && qty[m.id] > 0).length;
   document.getElementById("cnt1").textContent = qty.units ? qty.units+"台" : "";
   document.getElementById("cnt2").textContent = n(MENU_W) || "";
   document.getElementById("cnt3").textContent = n(MENU_O) || "";
   ALL.forEach(m => { if (!m.area) document.getElementById("q_"+m.id).textContent = qty[m.id]; });
-  document.getElementById("total").textContent = "¥" + calcTotal().toLocaleString();
+  animateTotal(calcTotal());
 }
 render();
 
