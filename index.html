@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>エアコンクリーニング ご予約フォーム｜いえピカ（仮）</title>
+<style>
+:root{--main:#f08a24;--main-d:#d9700c;--bg:#fff7ef;--card:#fff;--text:#2b2b2b;--sub:#777;--line:#f1e2d2;--err:#d93025}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.6}
+.wrap{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+.badge{display:inline-block;background:#ffe3c7;color:var(--main-d);font-weight:700;font-size:12px;padding:4px 12px;border-radius:999px}
+h1{font-size:24px;margin:12px 0 8px}
+.lead{color:var(--sub);font-size:14px;margin:0 0 20px}
+.card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(240,138,36,.08)}
+.card h2{font-size:17px;margin:0 0 16px;padding-bottom:10px;border-bottom:2px solid var(--line)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .name{font-weight:700}
+.row .price{font-size:12px;color:var(--sub);font-weight:400}
+.stepper{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.stepper button{width:36px;height:36px;border-radius:50%;border:2px solid var(--main);background:#fff;color:var(--main);font-size:20px;line-height:1;cursor:pointer}
+.stepper button:active{background:#ffe3c7}
+.stepper output{min-width:24px;text-align:center;font-weight:700;font-size:18px}
+.subhead{font-weight:700;margin:18px 0 4px}
+.total{background:linear-gradient(135deg,#fff1e2,#ffe3c7);border-radius:12px;padding:16px;margin-top:16px;text-align:center}
+.total .amount{font-size:30px;font-weight:800;color:var(--main-d)}
+.total small{display:block;color:var(--sub);font-size:12px}
+.note{font-size:13px;color:var(--sub);margin-top:12px}
+label.f{display:block;font-weight:700;margin:16px 0 6px;font-size:14px}
+.req{background:var(--err);color:#fff;font-size:11px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:400}
+.opt{color:var(--sub);font-size:12px;font-weight:400;margin-left:6px}
+input[type=text],input[type=tel],input[type=email],input[type=date],select,textarea{width:100%;padding:12px;border:1.5px solid #e2d4c5;border-radius:10px;font-size:16px;background:#fff;color:var(--text);font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--main)}
+textarea{min-height:90px;resize:vertical}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choices label{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid #e2d4c5;border-radius:10px;cursor:pointer;font-size:15px}
+.choices input{accent-color:var(--main);width:18px;height:18px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){.pair{grid-template-columns:1fr}}
+.submit{width:100%;padding:16px;margin-top:24px;border:none;border-radius:999px;background:var(--main);color:#fff;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(240,138,36,.35)}
+.submit:disabled{opacity:.6;cursor:wait}
+.msg{display:none;padding:16px;border-radius:12px;margin-top:16px;font-weight:700}
+.msg.ok{display:block;background:#e8f6ec;color:#1e7a3a}
+.msg.ng{display:block;background:#fdecea;color:var(--err)}
+footer{text-align:center;color:var(--sub);font-size:13px;margin-top:24px}
+footer a{color:var(--main-d)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">地域密着・丁寧な分解洗浄</span>
+  <h1>エアコンクリーニング ご予約フォーム</h1>
+  <p class="lead">台数とオプションを選ぶと概算金額が表示されます。送信後すぐに確認メールが届き、作業日は担当者よりご連絡のうえ確定します。</p>
+
+  <form id="bookingForm" novalidate>
+  <section class="card">
+    <h2>1. 台数とオプションを選ぶ</h2>
+    <div id="menu"></div>
+    <div class="total">
+      💰 概算金額
+      <div class="amount" id="total">¥0</div>
+      <small>（税込・駐車場代別）</small>
+    </div>
+    <p class="note">💡 こちらは概算です。汚れによる追加料金は基本的に発生しません（特殊な事情がある場合は作業前に必ずご説明します）。</p>
+  </section>
+
+  <section class="card">
+    <h2>2. ご予約情報を入力する</h2>
+
+    <label class="f" for="name">お名前<span class="req">必須</span></label>
+    <input type="text" id="name" name="name" required autocomplete="name">
+
+    <label class="f" for="tel">電話番号<span class="req">必須</span></label>
+    <input type="tel" id="tel" name="tel" required autocomplete="tel" inputmode="tel">
+
+    <label class="f" for="email">メールアドレス<span class="req">必須</span><span class="opt">確認メールの送付先</span></label>
+    <input type="email" id="email" name="email" required autocomplete="email">
+
+    <label class="f" for="area">エリア（都府県）<span class="req">必須</span></label>
+    <select id="area" name="area" required>
+      <option value="">選択してください</option>
+      <option>東京</option><option>神奈川</option><option>埼玉</option><option>千葉</option>
+      <option>その他（備考にご記入ください）</option>
+    </select>
+
+    <label class="f" for="zip">郵便番号</label>
+    <input type="text" id="zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="例）123-4567">
+
+    <label class="f" for="address">ご住所<span class="req">必須</span></label>
+    <input type="text" id="address" name="address" required autocomplete="street-address">
+
+    <label class="f">お住まいのタイプ<span class="req">必須</span></label>
+    <div class="choices">
+      <label><input type="radio" name="house" value="戸建て" required>戸建て</label>
+      <label><input type="radio" name="house" value="マンション・アパート">マンション・アパート</label>
+      <label><input type="radio" name="house" value="その他（店舗・事務所など）">その他（店舗・事務所など）</label>
+    </div>
+
+    <div id="dates"></div>
+    <p class="note">※ご希望日での対応が難しい場合は、1〜2日以内に日程再調整のご連絡をいたします。</p>
+
+    <label class="f">お支払い方法</label>
+    <div class="choices">
+      <label><input type="radio" name="payment" value="作業当日（現金）" checked>作業当日にお支払い（現金）</label>
+      <label><input type="radio" name="payment" value="作業当日（PayPay）">作業当日にお支払い（PayPay）</label>
+      <label><input type="radio" name="payment" value="請求書（カード払い可）">請求書払い（メールで届きます。カード払い可）</label>
+    </div>
+
+    <label class="f">駐車場<span class="opt">駐車場代は別途実費</span></label>
+    <div class="choices">
+      <label><input type="radio" name="parking" value="敷地内に駐車可" checked>敷地内に駐車可</label>
+      <label><input type="radio" name="parking" value="近隣コインパーキング利用">近隣コインパーキング利用</label>
+      <label><input type="radio" name="parking" value="相談したい">相談したい</label>
+    </div>
+
+    <label class="f">エアコン以外のお掃除もご相談いただけます<span class="opt">任意・料金は担当者からご案内します</span></label>
+    <div class="choices">
+      <label><input type="checkbox" name="other" value="お風呂・浴室">お風呂・浴室</label>
+      <label><input type="checkbox" name="other" value="キッチン・水回り">キッチン・水回り</label>
+      <label><input type="checkbox" name="other" value="洗濯機">洗濯機</label>
+      <label><input type="checkbox" name="other" value="その他">その他（備考にご記入ください）</label>
+    </div>
+
+    <label class="f" for="memo">ご要望・備考</label>
+    <textarea id="memo" name="memo"></textarea>
+
+    <label class="f" for="referral">紹介コード<span class="opt">任意・ご家族やお知り合いから紹介された方</span></label>
+    <input type="text" id="referral" name="referral">
+
+    <button type="submit" class="submit" id="submitBtn">この内容で予約する</button>
+    <div class="msg" id="msg"></div>
+    <p class="note">送信後、確認メールをお送りします。作業日はご予約から5営業日以内に担当者よりご連絡し確定します。</p>
+  </section>
+  </form>
+
+  <footer>
+    いえピカ（仮） ☎ <a href="tel:000-0000-0000">000-0000-0000</a><br>
+    © いえピカ（仮）
+  </footer>
+</div>
+
+<script>
+// ===== 設定（ここを書き換えてください） =====
+const GAS_URL = ""; // 例: "https://script.google.com/macros/s/xxxxxxxx/exec"
+
+const MENU = [
+  { id:"units",   name:"エアコン台数（壁掛け）", desc:"8,900円/台",  price:8900, init:1, min:1 },
+  { id:"auto",    name:"うち、お掃除機能付き",   desc:"＋6,000円/台", price:6000, capUnits:true },
+  { heading:"オプション（台数分お選びください）" },
+  { id:"set3",    name:"3点セット", desc:"防カビ抗菌コート＋室外機＋ドレンホース｜7,000円/台（別々なら9,500円）", price:7000, capUnits:true },
+  { id:"coat",    name:"防カビ・抗菌コート", desc:"3,000円/台", price:3000, capUnits:true },
+  { id:"outdoor", name:"室外機クリーニング", desc:"4,000円/台", price:4000, capUnits:true },
+  { id:"drain",   name:"ドレンホース洗浄",   desc:"2,500円/台", price:2500, capUnits:true },
+];
+const TIMES = ["9時〜12時","12時〜15時","15時〜18時","上記以外で相談したい"];
+// ==========================================
+
+const qty = {};
+const menuEl = document.getElementById("menu");
+MENU.forEach(m => {
+  if (m.heading) { menuEl.insertAdjacentHTML("beforeend", `<p class="subhead">${m.heading}</p>`); return; }
+  qty[m.id] = m.init || 0;
+  menuEl.insertAdjacentHTML("beforeend", `
+    <div class="row">
+      <div><div class="name">${m.name}</div><div class="price">${m.desc}</div></div>
+      <div class="stepper">
+        <button type="button" aria-label="${m.name}を減らす" data-id="${m.id}" data-d="-1">−</button>
+        <output id="q_${m.id}">${qty[m.id]}</output>
+        <button type="button" aria-label="${m.name}を増やす" data-id="${m.id}" data-d="1">＋</button>
+      </div>
+    </div>`);
+});
+menuEl.addEventListener("click", e => {
+  const b = e.target.closest("button[data-id]"); if (!b) return;
+  const m = MENU.find(x => x.id === b.dataset.id);
+  let v = qty[m.id] + Number(b.dataset.d);
+  v = Math.max(m.min || 0, Math.min(v, m.capUnits ? qty.units : 20));
+  qty[m.id] = v;
+  // 台数を減らしたら上限を超えた項目を調整
+  MENU.forEach(x => { if (x.capUnits && qty[x.id] > qty.units) qty[x.id] = qty.units; });
+  render();
+});
+function calcTotal(){ return MENU.reduce((s,m)=> m.id ? s + m.price*qty[m.id] : s, 0); }
+function render(){
+  MENU.forEach(m => { if (m.id) document.getElementById("q_"+m.id).textContent = qty[m.id]; });
+  document.getElementById("total").textContent = "¥" + calcTotal().toLocaleString();
+}
+render();
+
+// 希望日（第1〜第3）
+const datesEl = document.getElementById("dates");
+const tomorrow = new Date(Date.now() + 864e5).toISOString().slice(0,10);
+["第一","第二","第三"].forEach((n,i) => {
+  datesEl.insertAdjacentHTML("beforeend", `
+    <div class="pair">
+      <div><label class="f" for="date${i+1}">作業日${n}希望<span class="req">必須</span></label>
+        <input type="date" id="date${i+1}" name="date${i+1}" min="${tomorrow}" required></div>
+      <div><label class="f" for="time${i+1}">${n}希望時間<span class="req">必須</span></label>
+        <select id="time${i+1}" name="time${i+1}" required><option value="">選択</option>${TIMES.map(t=>`<option>${t}</option>`).join("")}</select></div>
+    </div>`);
+});
+
+// 送信
+const form = document.getElementById("bookingForm");
+const msg = document.getElementById("msg");
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  msg.className = "msg";
+  if (!form.checkValidity()) {
+    const bad = form.querySelector(":invalid");
+    msg.textContent = "未入力の必須項目があります。"; msg.className = "msg ng";
+    bad && bad.focus();
+    return;
+  }
+  const fd = new FormData(form);
+  const data = Object.fromEntries(fd.entries());
+  data.other = fd.getAll("other").join("、");
+  MENU.forEach(m => { if (m.id) data[m.id] = qty[m.id]; });
+  data.total = calcTotal();
+  data.submittedAt = new Date().toISOString();
+
+  if (!GAS_URL) {
+    console.log("送信データ（GAS_URL未設定）", data);
+    msg.textContent = "【テスト表示】GAS_URLが未設定のため送信されていません。"; msg.className = "msg ng";
+    return;
+  }
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true; btn.textContent = "送信中…";
+  try {
+    await fetch(GAS_URL, { method:"POST", mode:"no-cors", body: new URLSearchParams(data) });
+    form.innerHTML = `<section class="card"><h2>ご予約ありがとうございます</h2>
+      <p>ご入力のメールアドレスに確認メールをお送りしました。作業日は担当者よりご連絡のうえ確定いたします。</p>
+      <p class="note">メールが届かない場合は迷惑メールフォルダをご確認いただくか、お電話でお問い合わせください。</p></section>`;
+    window.scrollTo({top:0, behavior:"smooth"});
+  } catch (err) {
+    msg.textContent = "送信に失敗しました。時間をおいて再度お試しいただくか、お電話でご連絡ください。"; msg.className = "msg ng";
+    btn.disabled = false; btn.textContent = "この内容で予約する";
+  }
+});
+</script>
+</body>
+</html>
