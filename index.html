@@ -282,6 +282,8 @@ form.addEventListener("submit", async e => {
   const data = Object.fromEntries(fd.entries());
   data.other = MENU2.filter(m => m.id && qty[m.id] > 0).map(m => `${m.name}×${qty[m.id]}${m.unit}（${itemPrice(m).toLocaleString()}円${m.from ? "〜" : ""}）`).join("、");
   ALL.forEach(m => { data[m.id] = qty[m.id]; });
+  data.sub1 = MENU.filter(m => m.id).reduce((t,m) => t + itemPrice(m), 0);
+  data.sub2 = MENU2.filter(m => m.id).reduce((t,m) => t + itemPrice(m), 0);
   data.total = calcTotal();
   data.submittedAt = new Date().toISOString();
 
