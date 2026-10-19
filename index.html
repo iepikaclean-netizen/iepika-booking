@@ -43,6 +43,10 @@ textarea{min-height:90px;resize:vertical}
 .msg{display:none;padding:16px;border-radius:12px;margin-top:16px;font-weight:700}
 .msg.ok{display:block;background:#e8f6ec;color:#1e7a3a}
 .msg.ng{display:block;background:#fdecea;color:var(--err)}
+.row.sub{padding-left:14px;background:#fafcff}
+.row.sub .name{font-size:14px}
+.area{display:flex;align-items:center;gap:6px;font-weight:700;flex-shrink:0}
+.area input{width:90px;padding:8px 10px;border:2px solid var(--main);border-radius:10px;font-size:18px;text-align:right;font-family:inherit}
 .tabs{display:flex;gap:6px;margin-bottom:-1px;position:relative;z-index:1}
 .tab{flex:1;padding:12px 8px;border:none;border-radius:14px 14px 0 0;background:#cfe3f5;color:#4a6378;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 .tab[aria-selected=true]{background:var(--card);color:var(--main-d)}
@@ -163,23 +167,25 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbz6rTy5V0TIM6iFYtGenfYy
 
 const MENU = [
   { id:"units",   name:"エアコン台数（壁掛け）", desc:"9,900円/台",  price:9900, init:1 },
-  { id:"auto",    name:"うち、お掃除機能付き",   desc:"＋6,600円/台", price:6600, capUnits:true },
+  { id:"auto",    name:"うち、お掃除機能付き",   desc:"＋6,600円/台", price:6600, cap:"units" },
   { heading:"オプション（台数分お選びください）" },
-  { id:"set3",    name:"3点セット", desc:"防カビ抗菌コート＋室外機＋ドレンホース｜7,000円/台（別々なら9,500円）", price:7000, capUnits:true },
-  { id:"coat",    name:"防カビ・抗菌コート", desc:"3,000円/台", price:3000, capUnits:true },
-  { id:"outdoor", name:"室外機クリーニング", desc:"4,000円/台", price:4000, capUnits:true },
-  { id:"drain",   name:"ドレンホース洗浄",   desc:"2,500円/台", price:2500, capUnits:true },
+  { id:"set3",    name:"3点セット", desc:"防カビ抗菌コート＋室外機＋ドレンホース｜7,000円/台（別々なら9,500円）", price:7000, cap:"units" },
+  { id:"coat",    name:"防カビ・抗菌コート", desc:"3,000円/台", price:3000, cap:"units" },
+  { id:"outdoor", name:"室外機クリーニング", desc:"4,000円/台", price:4000, cap:"units" },
+  { id:"drain",   name:"ドレンホース洗浄",   desc:"2,500円/台", price:2500, cap:"units" },
 ];
 // エアコン以外のお掃除（金額は仮。price:0 は「要見積もり」として概算に含めない）
 const MENU2 = [
-  { heading:"水回り" },
-  { id:"bath",     name:"お風呂・浴室",       desc:"15,000円/箇所", price:15000, unit:"箇所" },
-  { id:"kitchen",  name:"キッチン",           desc:"15,000円/箇所", price:15000, unit:"箇所" },
-  { id:"toilet",   name:"トイレ",             desc:"8,000円/箇所",  price:8000,  unit:"箇所" },
-  { id:"washbasin",name:"洗面台",             desc:"6,000円/箇所",  price:6000,  unit:"箇所" },
+  { id:"bath",      name:"浴室",               desc:"17,800円/箇所", price:17800, unit:"箇所" },
+  { id:"mirror",    name:"鏡研磨",             desc:"浴室オプション｜3,300円", price:3300, unit:"箇所", cap:"bath", sub:true },
+  { id:"bathfan",   name:"換気扇",             desc:"浴室オプション｜5,500円", price:5500, unit:"箇所", cap:"bath", sub:true },
+  { id:"kitchen",   name:"キッチン",           desc:"12,100円/箇所", price:12100, unit:"箇所" },
+  { id:"rangehood", name:"レンジフード",       desc:"12,100円/台",   price:12100, unit:"台" },
+  { id:"toilet",    name:"トイレ",             desc:"7,700円/箇所",  price:7700,  unit:"箇所" },
+  { id:"washbasin", name:"洗面台",             desc:"7,700円/箇所",  price:7700,  unit:"箇所" },
   { heading:"その他" },
-  { id:"glass",    name:"ガラスクリーニング", desc:"2,000円/枚",    price:2000,  unit:"枚" },
-  { id:"cross",    name:"クロスメイク（壁紙染色）", desc:"要見積もり（お部屋数をお選びください）", price:0, unit:"部屋" },
+  { id:"glass",     name:"ガラスクリーニング", desc:"3,000円〜/枚（大きさにより変動）", price:3000, unit:"枚", from:true },
+  { id:"cross",     name:"クロスメイク（壁紙染色）", desc:"715円/㎡｜最低料金22,000円", price:715, unit:"㎡", minCharge:22000, area:true },
 ];
 const TIMES = ["9時〜12時","12時〜15時","15時〜18時","上記以外で相談したい"];
 // ==========================================
@@ -189,31 +195,40 @@ function buildMenu(list, el){
   list.forEach(m => {
     if (m.heading) { el.insertAdjacentHTML("beforeend", `<p class="subhead">${m.heading}</p>`); return; }
     qty[m.id] = m.init || 0;
-    el.insertAdjacentHTML("beforeend", `
-      <div class="row">
-        <div><div class="name">${m.name}</div><div class="price">${m.desc}</div></div>
-        <div class="stepper">
+    const ctrl = m.area
+      ? `<label class="area"><input type="number" min="0" max="1000" step="1" inputmode="numeric" id="q_${m.id}" data-area="${m.id}" value="" placeholder="0" aria-label="${m.name}の面積">${m.unit}</label>`
+      : `<div class="stepper">
           <button type="button" aria-label="${m.name}を減らす" data-id="${m.id}" data-d="-1">−</button>
           <output id="q_${m.id}">${qty[m.id]}</output>
           <button type="button" aria-label="${m.name}を増やす" data-id="${m.id}" data-d="1">＋</button>
-        </div>
+        </div>`;
+    el.insertAdjacentHTML("beforeend", `
+      <div class="row${m.sub ? " sub" : ""}">
+        <div><div class="name">${m.sub ? "└ " : ""}${m.name}</div><div class="price">${m.desc}</div></div>
+        ${ctrl}
       </div>`);
   });
   el.addEventListener("click", e => {
     const b = e.target.closest("button[data-id]"); if (!b) return;
     const m = ALL.find(x => x.id === b.dataset.id);
     let v = qty[m.id] + Number(b.dataset.d);
-    v = Math.max(m.min || 0, Math.min(v, m.capUnits ? qty.units : 20));
+    v = Math.max(m.min || 0, Math.min(v, m.cap ? qty[m.cap] : 20));
     qty[m.id] = v;
-    // 台数を減らしたら上限を超えた項目を調整
-    MENU.forEach(x => { if (x.capUnits && qty[x.id] > qty.units) qty[x.id] = qty.units; });
+    // 親の数を減らしたら上限を超えた項目を調整
+    ALL.forEach(x => { if (x.cap && qty[x.id] > qty[x.cap]) qty[x.id] = qty[x.cap]; });
+    render();
+  });
+  el.addEventListener("input", e => {
+    const id = e.target.dataset.area; if (!id) return;
+    qty[id] = Math.max(0, Math.min(1000, Math.floor(Number(e.target.value) || 0)));
     render();
   });
 }
 const ALL = [...MENU, ...MENU2].filter(m => m.id);
 buildMenu(MENU, document.getElementById("menu"));
 buildMenu(MENU2, document.getElementById("menu2"));
-function calcTotal(){ return ALL.reduce((s,m)=> s + m.price*qty[m.id], 0); }
+function itemPrice(m){ const p = m.price*qty[m.id]; return (m.minCharge && qty[m.id] > 0) ? Math.max(p, m.minCharge) : p; }
+function calcTotal(){ return ALL.reduce((s,m)=> s + itemPrice(m), 0); }
 function showPanel(n){
   [1,2].forEach(i => {
     document.getElementById("p"+i).hidden = i !== n;
@@ -228,7 +243,7 @@ function render(){
   const c2 = MENU2.filter(m=>m.id && qty[m.id]>0).length;
   document.getElementById("cnt1").textContent = c1 ? c1+"台" : "";
   document.getElementById("cnt2").textContent = c2 ? c2 : "";
-  ALL.forEach(m => { document.getElementById("q_"+m.id).textContent = qty[m.id]; });
+  ALL.forEach(m => { if (!m.area) document.getElementById("q_"+m.id).textContent = qty[m.id]; });
   document.getElementById("total").textContent = "¥" + calcTotal().toLocaleString();
 }
 render();
@@ -265,7 +280,7 @@ form.addEventListener("submit", async e => {
   }
   const fd = new FormData(form);
   const data = Object.fromEntries(fd.entries());
-  data.other = MENU2.filter(m => m.id && qty[m.id] > 0).map(m => `${m.name}×${qty[m.id]}${m.unit}${m.price ? "" : "（要見積もり）"}`).join("、");
+  data.other = MENU2.filter(m => m.id && qty[m.id] > 0).map(m => `${m.name}×${qty[m.id]}${m.unit}（${itemPrice(m).toLocaleString()}円${m.from ? "〜" : ""}）`).join("、");
   ALL.forEach(m => { data[m.id] = qty[m.id]; });
   data.total = calcTotal();
   data.submittedAt = new Date().toISOString();
