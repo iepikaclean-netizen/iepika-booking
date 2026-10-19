@@ -8,7 +8,7 @@
 :root{--main:#f08a24;--main-d:#d9700c;--bg:#e6f2fc;--card:#fff;--text:#2b2b2b;--sub:#777;--line:#f1e2d2;--err:#d93025}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.6}
-.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+.wrap{max-width:640px;margin:0 auto;padding:24px 16px 48px}
 .badge{display:inline-block;background:#ffe3c7;color:var(--main-d);font-weight:700;font-size:12px;padding:4px 12px;border-radius:999px}
 h1{font-size:24px;margin:12px 0 8px}
 .lead{color:var(--sub);font-size:14px;margin:0 0 20px}
@@ -43,10 +43,16 @@ textarea{min-height:90px;resize:vertical}
 .msg{display:none;padding:16px;border-radius:12px;margin-top:16px;font-weight:700}
 .msg.ok{display:block;background:#e8f6ec;color:#1e7a3a}
 .msg.ng{display:block;background:#fdecea;color:var(--err)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
-.grid2 .card{margin-bottom:0}
-.grid2+.card{margin-top:20px}
-@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.tabs{display:flex;gap:6px;margin-bottom:-1px;position:relative;z-index:1}
+.tab{flex:1;padding:12px 8px;border:none;border-radius:14px 14px 0 0;background:#cfe3f5;color:#4a6378;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.tab[aria-selected=true]{background:var(--card);color:var(--main-d)}
+.tab .cnt{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--main);color:#fff;font-size:12px;line-height:20px}
+.tab .cnt:empty{display:none}
+.tabcard{border-top-left-radius:0;border-top-right-radius:0}
+.panel[hidden]{display:none}
+.panel{animation:flip .35s ease}
+@keyframes flip{from{opacity:0;transform:rotateY(70deg)}to{opacity:1;transform:none}}
+.switch{display:block;width:100%;margin-top:14px;padding:12px;border:2px dashed var(--main);border-radius:12px;background:#fff;color:var(--main-d);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
 footer{text-align:center;color:var(--sub);font-size:13px;margin-top:24px}
 footer a{color:var(--main-d)}
 </style>
@@ -58,18 +64,23 @@ footer a{color:var(--main-d)}
   <p class="lead">台数とオプションを選ぶと概算金額が表示されます。送信後すぐに確認メールが届き、作業日は担当者よりご連絡のうえ確定します。</p>
 
   <form id="bookingForm" novalidate>
-  <div class="grid2">
-  <section class="card">
-    <h2>1. エアコンクリーニング</h2>
-    <div id="menu"></div>
-  </section>
-
-  <section class="card">
-    <h2>2. エアコン以外のお掃除<span class="opt">任意</span></h2>
-    <div id="menu2"></div>
-    <p class="note">※上記以外のお掃除は「ご要望・備考」欄にご記入ください。料金は担当者からご案内します。</p>
-  </section>
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab" role="tab" id="tab1" aria-controls="p1" aria-selected="true">1. エアコン<span class="cnt" id="cnt1"></span></button>
+    <button type="button" class="tab" role="tab" id="tab2" aria-controls="p2" aria-selected="false">2. エアコン以外<span class="cnt" id="cnt2"></span></button>
   </div>
+  <section class="card tabcard">
+    <div class="panel" id="p1" role="tabpanel" aria-labelledby="tab1">
+      <h2>1. エアコンクリーニング</h2>
+      <div id="menu"></div>
+      <button type="button" class="switch" data-go="2">エアコン以外のお掃除も見る ↻</button>
+    </div>
+    <div class="panel" id="p2" role="tabpanel" aria-labelledby="tab2" hidden>
+      <h2>2. エアコン以外のお掃除<span class="opt">任意</span></h2>
+      <div id="menu2"></div>
+      <p class="note">※上記以外のお掃除は「ご要望・備考」欄にご記入ください。料金は担当者からご案内します。</p>
+      <button type="button" class="switch" data-go="1">エアコンクリーニングに戻る ↻</button>
+    </div>
+  </section>
 
   <section class="card">
     <div class="total" style="margin-top:0">
@@ -203,7 +214,20 @@ const ALL = [...MENU, ...MENU2].filter(m => m.id);
 buildMenu(MENU, document.getElementById("menu"));
 buildMenu(MENU2, document.getElementById("menu2"));
 function calcTotal(){ return ALL.reduce((s,m)=> s + m.price*qty[m.id], 0); }
+function showPanel(n){
+  [1,2].forEach(i => {
+    document.getElementById("p"+i).hidden = i !== n;
+    document.getElementById("tab"+i).setAttribute("aria-selected", i === n);
+  });
+}
+document.getElementById("tab1").onclick = () => showPanel(1);
+document.getElementById("tab2").onclick = () => showPanel(2);
+document.querySelectorAll(".switch").forEach(b => b.onclick = () => showPanel(Number(b.dataset.go)));
 function render(){
+  const c1 = MENU.filter(m=>m.id).reduce((s,m)=>s+qty[m.id],0) && qty.units;
+  const c2 = MENU2.filter(m=>m.id && qty[m.id]>0).length;
+  document.getElementById("cnt1").textContent = c1 ? c1+"台" : "";
+  document.getElementById("cnt2").textContent = c2 ? c2 : "";
   ALL.forEach(m => { document.getElementById("q_"+m.id).textContent = qty[m.id]; });
   document.getElementById("total").textContent = "¥" + calcTotal().toLocaleString();
 }
