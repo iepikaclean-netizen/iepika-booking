@@ -47,16 +47,18 @@ textarea{min-height:90px;resize:vertical}
 .row.sub .name{font-size:14px}
 .area{display:flex;align-items:center;gap:6px;font-weight:700;flex-shrink:0}
 .area input{width:90px;padding:8px 10px;border:2px solid var(--main);border-radius:10px;font-size:18px;text-align:right;font-family:inherit}
-.tabs{display:flex;gap:6px;margin-bottom:-1px;position:relative;z-index:1}
-.tab{flex:1;padding:12px 8px;border:none;border-radius:14px 14px 0 0;background:#cfe3f5;color:#4a6378;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
-.tab[aria-selected=true]{background:var(--card);color:var(--main-d)}
-.tab .cnt{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--main);color:#fff;font-size:12px;line-height:20px}
-.tab .cnt:empty{display:none}
-.tabcard{border-top-left-radius:0;border-top-right-radius:0}
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cat{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px 12px;border:1.5px solid #d6e2ec;border-radius:16px;background:#fff;color:var(--text);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s,color .15s,border-color .15s}
+.cat .ico{font-size:30px;line-height:1}
+.cat:hover{border-color:var(--main)}
+.cat[aria-selected=true]{background:var(--main);border-color:var(--main);color:#fff;box-shadow:0 4px 12px rgba(240,138,36,.3)}
+.cat .cnt{position:absolute;top:6px;right:8px;min-width:20px;padding:0 6px;border-radius:999px;background:var(--err);color:#fff;font-size:12px;line-height:20px}
+.cat .cnt:empty{display:none}
+.cats-note{text-align:center;color:var(--sub);font-size:13px;margin:10px 0 14px}
 .panel[hidden]{display:none}
 .panel{animation:flip .35s ease}
 @keyframes flip{from{opacity:0;transform:rotateY(70deg)}to{opacity:1;transform:none}}
-.switch{display:block;width:100%;margin-top:14px;padding:12px;border:2px dashed var(--main);border-radius:12px;background:#fff;color:var(--main-d);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
+.next{display:block;width:100%;margin-top:14px;padding:12px;border:2px dashed var(--main);border-radius:12px;background:#fff;color:var(--main-d);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
 footer{text-align:center;color:var(--sub);font-size:13px;margin-top:24px}
 footer a{color:var(--main-d)}
 </style>
@@ -68,27 +70,34 @@ footer a{color:var(--main-d)}
   <p class="lead">台数とオプションを選ぶと概算金額が表示されます。送信後すぐに確認メールが届き、作業日は担当者よりご連絡のうえ確定します。</p>
 
   <form id="bookingForm" novalidate>
-  <div class="tabs" role="tablist">
-    <button type="button" class="tab" role="tab" id="tab1" aria-controls="p1" aria-selected="true">1. エアコン<span class="cnt" id="cnt1"></span></button>
-    <button type="button" class="tab" role="tab" id="tab2" aria-controls="p2" aria-selected="false">2. エアコン以外<span class="cnt" id="cnt2"></span></button>
+  <div class="cats" role="tablist" aria-label="メニューのカテゴリ">
+    <button type="button" class="cat" role="tab" id="tab1" aria-controls="p1" aria-selected="true"><span class="ico">❄️</span>エアコン<span class="cnt" id="cnt1"></span></button>
+    <button type="button" class="cat" role="tab" id="tab2" aria-controls="p2" aria-selected="false"><span class="ico">🛁</span>水回り<span class="cnt" id="cnt2"></span></button>
+    <button type="button" class="cat" role="tab" id="tab3" aria-controls="p3" aria-selected="false"><span class="ico">🏠</span>その他<span class="cnt" id="cnt3"></span></button>
   </div>
-  <section class="card tabcard">
+  <p class="cats-note">複数のメニューを組み合わせてご予約いただけます。合計金額はすべてのメニューの合算です。</p>
+  <section class="card">
     <div class="panel" id="p1" role="tabpanel" aria-labelledby="tab1">
-      <h2>1. エアコンクリーニング</h2>
+      <h2>❄️ エアコンクリーニング</h2>
       <div id="menu"></div>
-      <button type="button" class="switch" data-go="2">エアコン以外のお掃除も見る ↻</button>
+      <button type="button" class="next" data-go="2">次へ：水回り ›</button>
     </div>
     <div class="panel" id="p2" role="tabpanel" aria-labelledby="tab2" hidden>
-      <h2>2. エアコン以外のお掃除<span class="opt">任意</span></h2>
-      <div id="menu2"></div>
+      <h2>🛁 水回り</h2>
+      <div id="menuW"></div>
+      <button type="button" class="next" data-go="3">次へ：その他 ›</button>
+    </div>
+    <div class="panel" id="p3" role="tabpanel" aria-labelledby="tab3" hidden>
+      <h2>🏠 その他</h2>
+      <div id="menuO"></div>
       <p class="note">※上記以外のお掃除は「ご要望・備考」欄にご記入ください。料金は担当者からご案内します。</p>
-      <button type="button" class="switch" data-go="1">エアコンクリーニングに戻る ↻</button>
+      <button type="button" class="next" data-go="1">‹ エアコンに戻る</button>
     </div>
   </section>
 
   <section class="card">
     <div class="total" style="margin-top:0">
-      💰 概算金額（1＋2の合計）
+      💰 概算金額（すべてのメニューの合計）
       <div class="amount" id="total">¥0</div>
       <small>（税込・駐車場代別）</small>
     </div>
@@ -96,7 +105,7 @@ footer a{color:var(--main-d)}
   </section>
 
   <section class="card">
-    <h2>3. ご予約情報を入力する</h2>
+    <h2>ご予約情報を入力する</h2>
 
     <label class="f" for="name">お名前<span class="req">必須</span></label>
     <input type="text" id="name" name="name" required autocomplete="name">
@@ -174,8 +183,8 @@ const MENU = [
   { id:"outdoor", name:"室外機クリーニング", desc:"4,000円/台", price:4000, cap:"units" },
   { id:"drain",   name:"ドレンホース洗浄",   desc:"2,500円/台", price:2500, cap:"units" },
 ];
-// エアコン以外のお掃除（金額は仮。price:0 は「要見積もり」として概算に含めない）
-const MENU2 = [
+// 水回り
+const MENU_W = [
   { id:"bath",      name:"浴室",               desc:"17,800円/箇所", price:17800, unit:"箇所" },
   { id:"mirror",    name:"鏡研磨",             desc:"浴室オプション｜3,300円", price:3300, unit:"箇所", cap:"bath", sub:true },
   { id:"bathfan",   name:"換気扇",             desc:"浴室オプション｜5,500円", price:5500, unit:"箇所", cap:"bath", sub:true },
@@ -183,7 +192,9 @@ const MENU2 = [
   { id:"rangehood", name:"レンジフード",       desc:"12,100円/台",   price:12100, unit:"台" },
   { id:"toilet",    name:"トイレ",             desc:"7,700円/箇所",  price:7700,  unit:"箇所" },
   { id:"washbasin", name:"洗面台",             desc:"7,700円/箇所",  price:7700,  unit:"箇所" },
-  { heading:"その他" },
+];
+// その他
+const MENU_O = [
   { id:"glass",     name:"ガラスクリーニング", desc:"3,000円〜/枚（大きさにより変動）", price:3000, unit:"枚", from:true },
   { id:"cross",     name:"クロスメイク（壁紙染色）", desc:"715円/㎡｜最低料金22,000円", price:715, unit:"㎡", minCharge:22000, area:true },
 ];
@@ -224,25 +235,29 @@ function buildMenu(list, el){
     render();
   });
 }
+const MENU2 = [...MENU_W, ...MENU_O]; // エアコン以外（シートの「エアコン以外小計」用）
 const ALL = [...MENU, ...MENU2].filter(m => m.id);
 buildMenu(MENU, document.getElementById("menu"));
-buildMenu(MENU2, document.getElementById("menu2"));
+buildMenu(MENU_W, document.getElementById("menuW"));
+buildMenu(MENU_O, document.getElementById("menuO"));
 function itemPrice(m){ const p = m.price*qty[m.id]; return (m.minCharge && qty[m.id] > 0) ? Math.max(p, m.minCharge) : p; }
 function calcTotal(){ return ALL.reduce((s,m)=> s + itemPrice(m), 0); }
 function showPanel(n){
-  [1,2].forEach(i => {
+  [1,2,3].forEach(i => {
     document.getElementById("p"+i).hidden = i !== n;
     document.getElementById("tab"+i).setAttribute("aria-selected", i === n);
   });
 }
-document.getElementById("tab1").onclick = () => showPanel(1);
-document.getElementById("tab2").onclick = () => showPanel(2);
-document.querySelectorAll(".switch").forEach(b => b.onclick = () => showPanel(Number(b.dataset.go)));
+[1,2,3].forEach(i => document.getElementById("tab"+i).onclick = () => showPanel(i));
+document.querySelectorAll(".next").forEach(b => b.onclick = () => {
+  showPanel(Number(b.dataset.go));
+  document.querySelector(".cats").scrollIntoView({behavior:"smooth", block:"start"});
+});
 function render(){
-  const c1 = MENU.filter(m=>m.id).reduce((s,m)=>s+qty[m.id],0) && qty.units;
-  const c2 = MENU2.filter(m=>m.id && qty[m.id]>0).length;
-  document.getElementById("cnt1").textContent = c1 ? c1+"台" : "";
-  document.getElementById("cnt2").textContent = c2 ? c2 : "";
+  const n = list => list.filter(m => m.id && qty[m.id] > 0).length;
+  document.getElementById("cnt1").textContent = qty.units ? qty.units+"台" : "";
+  document.getElementById("cnt2").textContent = n(MENU_W) || "";
+  document.getElementById("cnt3").textContent = n(MENU_O) || "";
   ALL.forEach(m => { if (!m.area) document.getElementById("q_"+m.id).textContent = qty[m.id]; });
   document.getElementById("total").textContent = "¥" + calcTotal().toLocaleString();
 }
