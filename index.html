@@ -8,7 +8,7 @@
 :root{--main:#f08a24;--main-d:#d9700c;--bg:#e6f2fc;--card:#fff;--text:#2b2b2b;--sub:#777;--line:#f1e2d2;--err:#d93025}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.6}
-.wrap{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
 .badge{display:inline-block;background:#ffe3c7;color:var(--main-d);font-weight:700;font-size:12px;padding:4px 12px;border-radius:999px}
 h1{font-size:24px;margin:12px 0 8px}
 .lead{color:var(--sub);font-size:14px;margin:0 0 20px}
@@ -43,6 +43,10 @@ textarea{min-height:90px;resize:vertical}
 .msg{display:none;padding:16px;border-radius:12px;margin-top:16px;font-weight:700}
 .msg.ok{display:block;background:#e8f6ec;color:#1e7a3a}
 .msg.ng{display:block;background:#fdecea;color:var(--err)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.grid2 .card{margin-bottom:0}
+.grid2+.card{margin-top:20px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
 footer{text-align:center;color:var(--sub);font-size:13px;margin-top:24px}
 footer a{color:var(--main-d)}
 </style>
@@ -54,6 +58,7 @@ footer a{color:var(--main-d)}
   <p class="lead">台数とオプションを選ぶと概算金額が表示されます。送信後すぐに確認メールが届き、作業日は担当者よりご連絡のうえ確定します。</p>
 
   <form id="bookingForm" novalidate>
+  <div class="grid2">
   <section class="card">
     <h2>1. エアコンクリーニング</h2>
     <div id="menu"></div>
@@ -63,7 +68,11 @@ footer a{color:var(--main-d)}
     <h2>2. エアコン以外のお掃除<span class="opt">任意</span></h2>
     <div id="menu2"></div>
     <p class="note">※上記以外のお掃除は「ご要望・備考」欄にご記入ください。料金は担当者からご案内します。</p>
-    <div class="total">
+  </section>
+  </div>
+
+  <section class="card">
+    <div class="total" style="margin-top:0">
       💰 概算金額（1＋2の合計）
       <div class="amount" id="total">¥0</div>
       <small>（税込・駐車場代別）</small>
