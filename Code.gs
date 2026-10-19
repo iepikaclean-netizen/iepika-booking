@@ -1,10 +1,11 @@
 /**
  * 予約フォーム受信用 Google Apps Script（雛形）
- * 1. スプレッドシートを開き「拡張機能 > Apps Script」にこのコードを貼り付け
+ * 1. script.google.com で新しいプロジェクトを作り、このコードを貼り付け
  * 2. 「デプロイ > 新しいデプロイ > ウェブアプリ」
  *    実行ユーザー: 自分 / アクセス: 全員 でデプロイ
  * 3. 表示されたURLを index.html の GAS_URL に貼り付け
  */
+const SHEET_ID = '1M32UCebqUwzA4tHWcy7-ZQ9ccy2cviXtsXqDe7cb-vM';
 const SHOP_NAME = '家ピカエアコンクリーニング専門店';
 const NOTIFY_TO = Session.getEffectiveUser().getEmail(); // 店舗側の通知先
 
@@ -39,8 +40,11 @@ function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// 初回の権限承認用（エディタで一度実行）
+function setup() { getSheet_(); }
+
 function getSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   let sh = ss.getSheetByName('予約');
   if (!sh) {
     sh = ss.insertSheet('予約');
