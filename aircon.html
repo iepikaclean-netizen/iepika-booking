@@ -89,6 +89,7 @@ footer a{color:var(--main-d)}
 
     <label class="f" for="zip">郵便番号</label>
     <input type="text" id="zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="例）123-4567">
+    <p class="note" id="zipNote">郵便番号（7桁）を入力すると、都道府県と住所（市区町村・町域）が自動で入ります。番地は住所の続きに入力してください。</p>
 
     <label class="f" for="address">ご住所<span class="req">必須</span></label>
     <input type="text" id="address" name="address" required autocomplete="street-address">
@@ -221,6 +222,48 @@ const tomorrow = new Date(Date.now() + 864e5).toISOString().slice(0,10);
         <select id="time${i+1}" name="time${i+1}" required><option value="">選択</option>${TIMES.map(t=>`<option>${t}</option>`).join("")}</select></div>
     </div>`);
 });
+
+
+// 郵便番号から都道府県・住所（市区町村・町域）を自動入力（zipcloud API）
+const zipEl = document.getElementById("zip");
+const areaEl = document.getElementById("area");
+const addrEl = document.getElementById("address");
+const zipNote = document.getElementById("zipNote");
+let zipAutoPrefix = "";   // 前回自動入力した市区町村・町域
+let zipLastQuery = "";
+async function zipAutofill(){
+  const zip = zipEl.value.replace(/[^0-9]/g, "");
+  if (zip.length !== 7 || zip === zipLastQuery) return;
+  zipLastQuery = zip;
+  try {
+    const res = await fetch("https://zipcloud.ibsnet.co.jp/api/search?zipcode=" + zip);
+    const json = await res.json();
+    if (!json.results || !json.results.length) {
+      if (zipNote) zipNote.textContent = "郵便番号に該当する住所が見つかりませんでした。お手数ですが住所を入力してください。";
+      return;
+    }
+    const r = json.results[0];
+    const pref = r.address1;                 // 都道府県
+    const city = r.address2 + r.address3;    // 市区町村＋町域
+    if (areaEl) {
+      let opt = [...areaEl.options].find(o => (o.value || o.text) === pref);
+      if (!opt) { opt = new Option(pref, pref); areaEl.add(opt); }
+      areaEl.value = opt.value || pref;
+    }
+    const cur = addrEl.value;
+    if (!cur) {
+      addrEl.value = city;
+    } else if (zipAutoPrefix && cur.startsWith(zipAutoPrefix)) {
+      addrEl.value = city + cur.slice(zipAutoPrefix.length);  // 番地など後ろは残す
+    }
+    zipAutoPrefix = city;
+    if (zipNote) zipNote.textContent = "住所を自動入力しました（" + pref + city + "）。番地は住所の続きに入力してください。";
+  } catch (err) {
+    if (zipNote) zipNote.textContent = "住所の自動入力に失敗しました。お手数ですが住所を入力してください。";
+  }
+}
+zipEl.addEventListener("input", zipAutofill);
+zipEl.addEventListener("change", zipAutofill);
 
 // 送信（総合版と同じGAS・同じ項目名で送るので、シートはそのまま使えます）
 const form = document.getElementById("bookingForm");
