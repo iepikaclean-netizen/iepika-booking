@@ -84,7 +84,7 @@ footer a{color:var(--main-d)}
 
     <label class="f" for="area">エリア（都道府県）<span class="req">必須</span></label>
     <select id="area" name="area" required>
-      <option selected>長野県</option>
+      <option value="">選択してください</option><option>北海道</<option>青森県</<option>岩手県</<option>宮城県</<option>秋田県</<option>山形県</<option>福島県</<option>茨城県</<option>栃木県</<option>群馬県</<option>埼玉県</<option>千葉県</<option>東京都</<option>神奈川県</<option>新潟県</<option>富山県</<option>石川県</<option>福井県</<option>山梨県</<option>長野県</<option>岐阜県</<option>静岡県</<option>愛知県</<option>三重県</<option>滋賀県</<option>京都府</<option>大阪府</<option>兵庫県</<option>奈良県</<option>和歌山県</<option>鳥取県</<option>島根県</<option>岡山県</<option>広島県</<option>山口県</<option>徳島県</<option>香川県</<option>愛媛県</<option>高知県</<option>福岡県</<option>佐賀県</<option>長崎県</<option>熊本県</<option>大分県</<option>宮崎県</<option>鹿児島県</<option>沖縄県</</option></option>
     </select>
 
     <label class="f" for="zip">郵便番号</label>
@@ -107,7 +107,6 @@ footer a{color:var(--main-d)}
     <div class="choices">
       <label><input type="radio" name="payment" value="作業当日（現金）" checked>作業当日にお支払い（現金）</label>
       <label><input type="radio" name="payment" value="作業当日（PayPay）">作業当日にお支払い（PayPay）</label>
-      <label><input type="radio" name="payment" value="作業当日（クレジットカード・タッチ決済のみ）">作業当日にお支払い（クレジットカード・タッチ決済のみ）</label>
       <label><input type="radio" name="payment" value="請求書（カード払い可）">請求書払い（メールで届きます。カード払い可）</label>
     </div>
 
@@ -141,7 +140,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbz6rTy5V0TIM6iFYtGenfYy
 
 const MENU = [
   { id:"units",   name:"エアコン台数（壁掛け）", desc:"9,900円/台",  price:9900, init:1 },
-  { id:"auto",    name:"うち、お掃除機能付き",   desc:"＋9,900円/台", price:9900, cap:"units" },
+  { id:"auto",    name:"うち、お掃除機能付き",   desc:"＋6,600円/台", price:6600, cap:"units" },
   { heading:"オプション（台数分お選びください）" },
   { id:"set3",    name:"3点セット", desc:"防カビ抗菌コート＋室外機＋ドレンホース｜8,000円/台（別々なら10,500円）", price:8000, cap:"units" },
   { id:"coat",    name:"防カビ・抗菌コート", desc:"3,000円/台", price:3000, cap:"units" },
