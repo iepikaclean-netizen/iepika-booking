@@ -52,7 +52,13 @@ textarea{min-height:90px;resize:vertical}
 .row.sub .name{font-size:14px}
 .area{display:flex;align-items:center;gap:6px;font-weight:700;flex-shrink:0}
 .area input{width:90px;padding:8px 10px;border:2px solid var(--main);border-radius:10px;font-size:18px;text-align:right;font-family:inherit}
-.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:480px){.cats{grid-template-columns:repeat(2,1fr)}}
+.total .disc{display:block;color:#1e7a3a;font-weight:700;font-size:14px}
+.total .disc:empty{display:none}
+.set-note{font-size:14px;font-weight:700;margin-top:12px;color:var(--main-d)}
+.set-note.ok{color:#1e7a3a}
+.set-note:empty{display:none}
 .cat{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px 12px;border:1.5px solid #d6e2ec;border-radius:16px;background:#fff;color:var(--text);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s,color .15s,border-color .15s}
 .cat .ico{font-size:30px;line-height:1}
 .cat:hover{border-color:var(--main)}
@@ -78,7 +84,8 @@ footer a{color:var(--main-d)}
   <div class="cats" role="tablist" aria-label="メニューのカテゴリ">
     <button type="button" class="cat" role="tab" id="tab1" aria-controls="p1" aria-selected="true"><span class="ico">✨</span>エアコン<span class="cnt" id="cnt1"></span></button>
     <button type="button" class="cat" role="tab" id="tab2" aria-controls="p2" aria-selected="false"><span class="ico">🛁</span>水回り<span class="cnt" id="cnt2"></span></button>
-    <button type="button" class="cat" role="tab" id="tab3" aria-controls="p3" aria-selected="false"><span class="ico">🏠</span>その他<span class="cnt" id="cnt3"></span></button>
+    <button type="button" class="cat" role="tab" id="tab3" aria-controls="p3" aria-selected="false"><span class="ico">🎁</span>水回りセット<span class="cnt" id="cnt3"></span></button>
+    <button type="button" class="cat" role="tab" id="tab4" aria-controls="p4" aria-selected="false"><span class="ico">🏠</span>その他<span class="cnt" id="cnt4"></span></button>
   </div>
   <p class="cats-note">複数のメニューを組み合わせてご予約いただけます。合計金額はすべてのメニューの合算です。</p>
   <section class="card">
@@ -90,9 +97,22 @@ footer a{color:var(--main-d)}
     <div class="panel" id="p2" role="tabpanel" aria-labelledby="tab2" hidden>
       <h2>🛁 水回り</h2>
       <div id="menuW"></div>
-      <button type="button" class="next" data-go="3">次へ：その他 ›</button>
+      <button type="button" class="next" data-go="3">次へ：水回りセット ›</button>
     </div>
     <div class="panel" id="p3" role="tabpanel" aria-labelledby="tab3" hidden>
+      <h2>🎁 水回りセット</h2>
+      <p class="note" style="margin-top:0">「水回り」タブで選んだ浴室・キッチン・レンジフード・トイレ・洗面台の点数に応じて、合計金額から割引します。</p>
+      <div class="choices" id="setChoices">
+        <label><input type="radio" name="wset" value="" checked>セットを利用しない</label>
+        <label><input type="radio" name="wset" value="3">選べる3点セット（合計金額より3,300円お得）</label>
+        <label><input type="radio" name="wset" value="4">選べる4点セット（合計金額より5,500円お得）</label>
+        <label><input type="radio" name="wset" value="5">選べる5点セット（合計金額より7,700円お得）</label>
+      </div>
+      <p class="set-note" id="setNote"></p>
+      <button type="button" class="next" data-go="2">‹ 水回りでメニューを選ぶ</button>
+      <button type="button" class="next" data-go="4">次へ：その他 ›</button>
+    </div>
+    <div class="panel" id="p4" role="tabpanel" aria-labelledby="tab4" hidden>
       <h2>🏠 その他</h2>
       <div id="menuO"></div>
       <p class="note">※上記以外のお掃除は「ご要望・備考」欄にご記入ください。料金は担当者からご案内します。</p>
@@ -104,6 +124,7 @@ footer a{color:var(--main-d)}
     <div class="total" style="margin-top:0">
       💰 概算金額（すべてのメニューの合計）
       <div class="amount" id="total">¥0</div>
+      <span class="disc" id="discLine"></span>
       <small>（税込・駐車場代別）</small>
     </div>
     <p class="note">💡 こちらは概算です。汚れによる追加料金は基本的に発生しません（特殊な事情がある場合は作業前に必ずご説明します）。</p>
@@ -250,6 +271,12 @@ const MENU_O = [
   { id:"glass",     name:"ガラスクリーニング", desc:"3,000円〜/枚（大きさにより変動）", price:3000, unit:"枚", from:true },
   { id:"cross",     name:"クロスメイク（壁紙染色）", desc:"715円/㎡｜最低料金22,000円", price:715, unit:"㎡", minCharge:22000, area:true },
 ];
+// 水回りセット（水回りのメイン項目の合計点数で判定。鏡研磨・換気扇は対象外）
+const WSETS = [
+  { n:3, name:"選べる3点セット", off:3300 },
+  { n:4, name:"選べる4点セット", off:5500 },
+  { n:5, name:"選べる5点セット", off:7700 },
+];
 const TIMES = ["9時〜12時","12時〜15時","15時〜18時","上記以外で相談したい"];
 // ==========================================
 
@@ -293,14 +320,22 @@ buildMenu(MENU, document.getElementById("menu"));
 buildMenu(MENU_W, document.getElementById("menuW"));
 buildMenu(MENU_O, document.getElementById("menuO"));
 function itemPrice(m){ const p = m.price*qty[m.id]; return (m.minCharge && qty[m.id] > 0) ? Math.max(p, m.minCharge) : p; }
-function calcTotal(){ return ALL.reduce((s,m)=> s + itemPrice(m), 0); }
+const W_MAIN = MENU_W.filter(m => m.id && !m.sub);
+function wCount(){ return W_MAIN.reduce((s,m) => s + qty[m.id], 0); }
+function selectedSet(){
+  const r = document.querySelector('input[name="wset"]:checked');
+  return WSETS.find(s => r && String(s.n) === r.value) || null;
+}
+function setDiscount(){ const s = selectedSet(); return (s && wCount() >= s.n) ? s.off : 0; }
+function calcTotal(){ return ALL.reduce((s,m)=> s + itemPrice(m), 0) - setDiscount(); }
+document.getElementById("setChoices").addEventListener("change", () => render());
 function showPanel(n){
-  [1,2,3].forEach(i => {
+  [1,2,3,4].forEach(i => {
     document.getElementById("p"+i).hidden = i !== n;
     document.getElementById("tab"+i).setAttribute("aria-selected", i === n);
   });
 }
-[1,2,3].forEach(i => document.getElementById("tab"+i).onclick = () => showPanel(i));
+[1,2,3,4].forEach(i => document.getElementById("tab"+i).onclick = () => showPanel(i));
 document.querySelectorAll(".next").forEach(b => b.onclick = () => {
   showPanel(Number(b.dataset.go));
   document.querySelector(".cats").scrollIntoView({behavior:"smooth", block:"start"});
@@ -333,7 +368,14 @@ function render(){
   const n = list => list.filter(m => m.id && qty[m.id] > 0).length;
   document.getElementById("cnt1").textContent = qty.units ? qty.units+"台" : "";
   document.getElementById("cnt2").textContent = n(MENU_W) || "";
-  document.getElementById("cnt3").textContent = n(MENU_O) || "";
+  document.getElementById("cnt4").textContent = n(MENU_O) || "";
+  const s = selectedSet(), wc = wCount(), off = setDiscount();
+  document.getElementById("cnt3").textContent = s ? s.n + "点" : "";
+  const note = document.getElementById("setNote");
+  if (!s) { note.textContent = ""; note.className = "set-note"; }
+  else if (off) { note.textContent = `✓ ${s.name}適用中：合計金額から${s.off.toLocaleString()}円お得になります（水回り ${wc}点選択中）`; note.className = "set-note ok"; }
+  else { note.textContent = `水回りで現在${wc}点選択中です。あと${s.n - wc}点選ぶと${s.name}（${s.off.toLocaleString()}円お得）が適用されます。`; note.className = "set-note"; }
+  document.getElementById("discLine").textContent = off ? `${s.name}割引 −${off.toLocaleString()}円 適用中` : "";
   ALL.forEach(m => { if (!m.area) document.getElementById("q_"+m.id).textContent = qty[m.id]; });
   animateTotal(calcTotal());
 }
@@ -405,6 +447,12 @@ form.addEventListener("submit", async e => {
     window.scrollTo({top:0, behavior:"smooth"});
     return;
   }
+  const ws = selectedSet();
+  if (ws && wCount() < ws.n) {
+    msg.textContent = `${ws.name}は水回りメニューを${ws.n}点以上お選びください（現在${wCount()}点）。`; msg.className = "msg ng";
+    showPanel(3); window.scrollTo({top:0, behavior:"smooth"});
+    return;
+  }
   if (!form.checkValidity()) {
     const bad = form.querySelector(":invalid");
     msg.textContent = "未入力の必須項目があります。"; msg.className = "msg ng";
@@ -414,9 +462,13 @@ form.addEventListener("submit", async e => {
   const fd = new FormData(form);
   const data = Object.fromEntries(fd.entries());
   data.other = MENU2.filter(m => m.id && qty[m.id] > 0).map(m => `${m.name}×${qty[m.id]}${m.unit}（${itemPrice(m).toLocaleString()}円${m.from ? "〜" : ""}）`).join("、");
+  const disc = setDiscount();
+  if (disc) data.other = (data.other ? data.other + "、" : "") + `${ws.name}（−${disc.toLocaleString()}円）`;
+  data.wset = ws ? ws.name : "";
+  data.wsetDiscount = disc;
   ALL.forEach(m => { data[m.id] = qty[m.id]; });
   data.sub1 = MENU.filter(m => m.id).reduce((t,m) => t + itemPrice(m), 0);
-  data.sub2 = MENU2.filter(m => m.id).reduce((t,m) => t + itemPrice(m), 0);
+  data.sub2 = MENU2.filter(m => m.id).reduce((t,m) => t + itemPrice(m), 0) - disc;
   data.total = calcTotal();
   data.submittedAt = new Date().toISOString();
 
